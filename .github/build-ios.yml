@@ -1,0 +1,31 @@
+name: Build Zexy for iOS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run: |
+          brew install cmake make
+          xcode-select --install
+
+      - name: Configure & Compile Zexy for iOS
+        run: |
+          mkdir build && cd build
+          cmake -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_SYSTEM_NAME=iOS ..
+          make -j$(sysctl -n hw.ncpu)
+
+      - name: Upload Compiled Files
+        uses: actions/upload-artifact@v3
+        with:
+          name: zexy-ios
+          path: build/zexy.pd_darwin
